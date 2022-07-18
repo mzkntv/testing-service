@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -14,6 +15,22 @@ class TestCaseViewSet(viewsets.ModelViewSet):
 class ProcessingTestCaseViewSet(viewsets.ModelViewSet):
     queryset = models.ProcessingTestCase.objects.all()
     serializer_class = serializers.ProcessingTestCaseSerializer
+    filterset_fields = ('status',)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data={**request.data, 'test_case': self.kwargs.get('test_case_pk', None)})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get_queryset(self, *args, **kwargs):
+        test_case_id = self.kwargs.get("test_case_pk")
+        try:
+            test_case = models.TestCase.objects.get(id=test_case_id)
+        except models.TestCase.DoesNotExist:
+            raise NotFound('A test case with this id does not exist')
+        return self.queryset.filter(test_case=test_case)
 
     def perform_create(self, serializer: serializers.ProcessingTestCaseSerializer) -> None:
         first_question = models.Question.objects.filter(
@@ -65,4 +82,4 @@ class AnswerViewSet(viewsets.ModelViewSet):
             processing_test_case.status = models.ProcessingTestCase.COMPLETED_STATE_CHOICE
         processing_test_case.current_question = question.next_question
         serializer.save()
-        question.save()
+        processing_test_case.save()

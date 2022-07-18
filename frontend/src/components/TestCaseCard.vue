@@ -1,17 +1,18 @@
 <template>
   <div>
     <h4>{{ title }}</h4>
-    <button type="button" @click="startTest">{{ btnText }}</button>
+    <router-link :to="{name: 'test-case-detail', params: {testCaseId}}">История</router-link>
+    <button type="button" @click="startTest">{{ startBtnText }}</button>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import {HTTP} from "../plugins/axios.js";
 
 export default {
   name: "TestCaseCard",
   props: {
-    id: {
+    testCaseId: {
       type: Number,
       required: true,
     },
@@ -19,7 +20,7 @@ export default {
       type: String,
       required: true,
     },
-    btnText: {
+    startBtnText: {
       type: String,
       required: false,
       default: 'Начать',
@@ -27,9 +28,13 @@ export default {
   },
   methods: {
     startTest() {
-      axios.post(`http://127.0.0.1:5173/api/test-case/${id}/processing`, {
-
-      }).then(() => console.log('success'))
+      HTTP.post(`/api/test-cases/${this.testCaseId}/processing/`).then(({data}) => {
+        console.log(data)
+        this.$router.push({
+          name: 'question-detail',
+          params: {testCaseId: this.testCaseId, processingId: data?.id, questionId: data?.current_question}
+        })
+      })
     }
   }
 }

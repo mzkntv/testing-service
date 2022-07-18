@@ -51,16 +51,17 @@ class Choice(models.Model):
 
 
 class ProcessingTestCase(models.Model):
-    IN_PROGRESS_STATE_CHOICE = 1
-    COMPLETED_STATE_CHOICE = 2
+    IN_PROGRESS_STATE_CHOICE = 'in_progress'
+    COMPLETED_STATE_CHOICE = 'completed'
     STATE_CHOICES = (
         (IN_PROGRESS_STATE_CHOICE, 'В процессе'),
         (COMPLETED_STATE_CHOICE, 'Завершено'),
     )
-    status = models.PositiveSmallIntegerField(
+    status = models.CharField(
         verbose_name='Статус',
         choices=STATE_CHOICES,
-        default=IN_PROGRESS_STATE_CHOICE
+        default=IN_PROGRESS_STATE_CHOICE,
+        max_length=255,
     )
     started_at = models.DateTimeField(verbose_name='Дата начала прохождения теста', default=datetime.now)
     test_case = models.ForeignKey(verbose_name='Шаблон тестирования', to=TestCase, on_delete=models.CASCADE)
