@@ -20,6 +20,7 @@ router.register(r'answer', views.AnswerViewSet, 'answer')
 
 urlpatterns = [
     path(r'auth/', include('djoser.urls')),
+    path(r'auth/', include('djoser.urls.authtoken')),
 ]
 urlpatterns += router.urls
 urlpatterns += test_case_router.urls
